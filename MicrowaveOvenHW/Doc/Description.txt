@@ -1,0 +1,23 @@
+﻿Microwave oven controller:
+--------------------------
+Please supply a complete Visual studio solution including the controller code and unit tests.
+It would be preferable if you could supply your solution before we meet, but I do realize time is short.
+
+Please share a link from where we can download your solution from (do not send the solution
+as an attached file as it might be blocked). Please reach out to us if you have any questions.
+
+
+It’s a very simple microwave oven. It has:
+* A heater – Can be turned on or off
+* A door – Can be opened and closed by user
+* A Start Button – Can be pressed by the user
+
+User stories:
+* US_1: When I open door Light is on.
+* US_2: When I close door Light turns off.
+* US_3: When I open door heater stops if running.
+* US_4: When I press start button when door is open nothing happens.
+* US_5: When I press start button when door is closed, heater runs for 1 minute.
+* US_6: When I press start button when door is closed and already heating, increase remaining time with 1 minute.
+
+Any additional requirements that may be missed can be assumed by you, but please note those down.
