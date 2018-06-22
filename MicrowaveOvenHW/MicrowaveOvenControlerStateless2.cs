@@ -12,8 +12,8 @@ namespace MicrowaveOvenHW
     [Description("Stateless2")]
     public class MicrowaveOvenControlerStateless2 : MicrowaveOvenControlerBase
     {
-        #region private members
-        private StateMachine<MicrowaveOwenState, MicrowaveOvenTriggers> _sm;
+        #region protected members
+        protected StateMachine<MicrowaveOwenState, MicrowaveOvenTriggers> _sm;
         #endregion
 
         #region IMicrowaveOvenControler

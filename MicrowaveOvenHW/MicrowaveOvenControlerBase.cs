@@ -1,11 +1,12 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
 using MicrowaveOvenHW.Interfaces;
 
 namespace MicrowaveOvenHW
 {
-    public abstract class MicrowaveOvenControlerBase : IMicrowaveOvenControler
+    public abstract class MicrowaveOvenControlerBase : IMicrowaveOvenControler, IDisposable
     {
         #region public consts
         public const int DEFAULT_HEATING_TIME = 60;
@@ -15,6 +16,7 @@ namespace MicrowaveOvenHW
         #region private members
         protected IMicrowaveOvenHWEx _hw;
         protected int _heatingTimeLeft = 0;
+        private bool _initialized = false;
         #endregion
 
         #region IMicrowaveOvenControler
@@ -31,6 +33,7 @@ namespace MicrowaveOvenHW
             // subscribe HW events
             _hw.DoorOpenChanged += HwOnDoorOpenChanged;
             _hw.StartButtonPressed += HwOnStartButtonPressed;
+            _initialized = true;
         }
 
         public abstract void OneSecondTick();
@@ -47,5 +50,17 @@ namespace MicrowaveOvenHW
                 .SingleOrDefault((v) => v is DescriptionAttribute) is DescriptionAttribute desc
                 ? desc.Description : base.ToString();
         }
+
+        #region IDisposable
+        public virtual void Dispose()
+        {
+            if (_initialized)
+            {
+                _hw.DoorOpenChanged -= HwOnDoorOpenChanged;
+                _hw.StartButtonPressed -= HwOnStartButtonPressed;
+                _initialized = false;
+            }
+        }
+        #endregion
     }
 }
