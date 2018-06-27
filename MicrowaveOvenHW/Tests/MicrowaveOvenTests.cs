@@ -30,198 +30,176 @@ namespace MicrowaveOvenHW.Tests
 
         [Test(Description = "US_1: When I open door Light is on.")]
         [TestCaseSource("GetImplementations")]
-        public void US1_Test1(IMicrowaveOvenControler ctrl, IMicrowaveOvenHWEx hw)
+        public void US1_When_I_open_door_Light_is_on(IMicrowaveOvenControler ctrl, IMicrowaveOvenHWEx hw)
         {
-            hw.Initialize();
-            ctrl.Initialize(hw);
+            using (var ctx = new MicrowaveTestSetup(ctrl, hw))
+            {
+                // simulate door open
+                ctx.Ui.OpenDoor();
 
-            // simulate door open
-            ((IMicrowaveOvenUI)hw).OpenDoor();
-
-            Assert.IsTrue(hw.LightOn, "ensure the light is on after door closing");
+                Assert.IsTrue(ctx.Hw.LightOn, "ensure the light is on after door closing");
+            }
         }
 
         [Test(Description = "US_2: When I close door Light turns off.")]
         [TestCaseSource("GetImplementations")]
-        public void US2_Test1(IMicrowaveOvenControler ctrl, IMicrowaveOvenHWEx hw)
+        public void US2_When_I_close_door_Light_turns_off(IMicrowaveOvenControler ctrl, IMicrowaveOvenHWEx hw)
         {
-            hw.Initialize();
-            ctrl.Initialize(hw);
+            using (var ctx = new MicrowaveTestSetup(ctrl, hw))
+            {
+                // simulate door open
+                ctx.Ui.OpenDoor();
+                Assert.IsTrue(ctx.Hw.LightOn, "ensure the light is on after door closing");
 
-            // simulate door open
-            ((IMicrowaveOvenUI)hw).OpenDoor();
-            Assert.IsTrue(hw.LightOn, "ensure the light is on after door closing");
-
-            // simulate door close
-            ((IMicrowaveOvenUI)hw).CloseDoor();
-            Assert.IsFalse(hw.LightOn, "ensure the light is off after door closing");
+                // simulate door close
+                ctx.Ui.CloseDoor();
+                Assert.IsFalse(ctx.Hw.LightOn, "ensure the light is off after door closing");
+            }
         }
 
         [Test(Description = "US_3: When I open door heater stops if running.")]
         [TestCaseSource("GetImplementations")]
-        public void US3_Test1(IMicrowaveOvenControler ctrl, IMicrowaveOvenHWEx hw)
+        public void US3_When_I_open_door_heater_stops_if_running(IMicrowaveOvenControler ctrl, IMicrowaveOvenHWEx hw)
         {
-            hw.Initialize();
-            ctrl.Initialize(hw);
+            using (var ctx = new MicrowaveTestSetup(ctrl, hw))
+            {
+                // simulate press start button - start heating
+                ctx.Ui.PressStartButton();
 
-            // ensure the heater is off and the door closed - default initial state
-            Assert.IsFalse(hw.HeaterOn);
-            Assert.IsFalse(hw.DoorOpen);
+                Assert.IsTrue(ctx.Hw.HeaterOn, "ensure the heater has been started after 'PressStartButton'");
 
-            // simulate press start button - start heating
-            ((IMicrowaveOvenUI)hw).PressStartButton();
+                // simulate door open
+                ctx.Ui.OpenDoor();
 
-            Assert.IsTrue(hw.HeaterOn, "ensure the heater has been started after 'PressStartButton'");
-
-            // simulate door open
-            ((IMicrowaveOvenUI)hw).OpenDoor();
-
-            Assert.IsFalse(hw.HeaterOn, "ensure the heater has been stopped after opening the door");
-            Assert.IsTrue(hw.LightOn, "ensure if light is on after opening the door");
+                Assert.IsFalse(ctx.Hw.HeaterOn, "ensure the heater has been stopped after opening the door");
+                Assert.IsTrue(ctx.Hw.LightOn, "ensure if light is on after opening the door");
+            }
         }
 
         [Test(Description = "US_3: When I open door heater stops if running.")]
         [TestCaseSource("GetImplementations")]
-        public void US3_Test2(IMicrowaveOvenControler ctrl, IMicrowaveOvenHWEx hw)
+        public void US3_When_I_open_door_heater_stops_if_running_ensure_total_time(IMicrowaveOvenControler ctrl, IMicrowaveOvenHWEx hw)
         {
-            hw.Initialize();
-            ctrl.Initialize(hw);
+            using (var ctx = new MicrowaveTestSetup(ctrl, hw))
+            {
+                // simulate press start button - start heating
+                ctx.Ui.PressStartButton();
 
-            // ensure the heater is off and the door closed - default initial state
-            Assert.IsFalse(hw.HeaterOn);
-            Assert.IsFalse(hw.DoorOpen);
+                Assert.IsTrue(ctx.Hw.HeaterOn, "ensure the heater has been started after 'PressStartButton'");
 
-            // simulate press start button - start heating
-            ((IMicrowaveOvenUI)hw).PressStartButton();
+                // simulate door open
+                ctx.Ui.OpenDoor();
 
-            Assert.IsTrue(hw.HeaterOn, "ensure the heater has been started after 'PressStartButton'");
+                // simulate time elapsed - should not change enything
+                SimulateTimeElapse(ctx.Ctrl, 60);
 
-            // simulate door open
-            ((IMicrowaveOvenUI)hw).OpenDoor();
+                // simulate door close
+                ctx.Ui.CloseDoor();
 
-            // simulate time elapsed - should not change enything
-            SimulateTimeElapse(ctrl, 60);
+                SimulateTimeElapse(ctx.Ctrl, 59);
 
-            // simulate door close
-            ((IMicrowaveOvenUI)hw).CloseDoor();
-
-            SimulateTimeElapse(ctrl, 59);
-
-            Assert.IsTrue(hw.HeaterOn, "ensure the heater is still running");
-            Assert.IsFalse(hw.LightOn, "ensure if light is of after closing the door");
+                Assert.IsTrue(ctx.Hw.HeaterOn, "ensure the heater is still running");
+                Assert.IsFalse(ctx.Hw.LightOn, "ensure if light is of after closing the door");
+            }
         }
 
         [Test(Description = "US_4: When I press start button when door is open nothing happens.")]
         [TestCaseSource("GetImplementations")]
-        public void US4_Test1(IMicrowaveOvenControler ctrl, IMicrowaveOvenHWEx hw)
+        public void US4_When_I_press_start_button_when_door_is_open_nothing_happens(IMicrowaveOvenControler ctrl, IMicrowaveOvenHWEx hw)
         {
-            hw.Initialize();
-            ctrl.Initialize(hw);
+            using (var ctx = new MicrowaveTestSetup(ctrl, hw))
+            {
+                // simulate door open
+                ctx.Ui.OpenDoor();
 
-            // ensure the heater is off and the door closed - default initial state
-            Assert.IsFalse(hw.HeaterOn);
-            Assert.IsFalse(hw.DoorOpen);
+                Assert.IsTrue(ctx.Hw.DoorOpen, "ensure if door state is correct");
+                Assert.IsTrue(ctx.Hw.LightOn, "ensure the light is on");
+                Assert.IsFalse(ctx.Hw.HeaterOn, "ensure the heater is off");
 
-            // simulate door open
-            ((IMicrowaveOvenUI)hw).OpenDoor();
+                // simulate press start button
+                ctx.Ui.PressStartButton();
 
-            Assert.IsTrue(hw.DoorOpen, "ensure if door state is correct");
-            Assert.IsTrue(hw.LightOn, "ensure the light is on");
-            Assert.IsFalse(hw.HeaterOn, "ensure the heater is off");
-
-            // simulate press start button
-            ((IMicrowaveOvenUI)hw).PressStartButton();
-
-            Assert.IsFalse(hw.HeaterOn, "ensure if heating has not been started after 'PressStartButton'");
+                Assert.IsFalse(ctx.Hw.HeaterOn, "ensure if heating has not been started after 'PressStartButton'");
+            }
         }
 
         [Test(Description = "US_5: When I press start button when door is closed, heater runs for 1 minute.")]
         [TestCaseSource("GetImplementations")]
-        public void US5_Test1(IMicrowaveOvenControler ctrl, IMicrowaveOvenHWEx hw)
+        public void US5_When_button_pressed_and_door_closed_heater_runs_for_1_minute(IMicrowaveOvenControler ctrl, IMicrowaveOvenHWEx hw)
         {
-            hw.Initialize();
-            ctrl.Initialize(hw);
+            using (var ctx = new MicrowaveTestSetup(ctrl, hw))
+            {
+                // simulate press start button
+                ctx.Ui.PressStartButton();
 
-            // ensure the heater is off and the door closed - default initial state
-            Assert.IsFalse(hw.HeaterOn);
-            Assert.IsFalse(hw.DoorOpen);
-            Assert.IsFalse(hw.LightOn);
+                Assert.IsTrue(ctx.Hw.HeaterOn, "ensure the heater has been started after 'PressStartButton'");
 
-            // simulate press start button
-            ((IMicrowaveOvenUI)hw).PressStartButton();
+                SimulateTimeElapse(ctx.Ctrl, 59);
 
-            Assert.IsTrue(hw.HeaterOn, "ensure the heater has been started after 'PressStartButton'");
+                Assert.IsTrue(ctx.Hw.HeaterOn, "ensure the heater is on 1 second before the end of heating");
 
-            SimulateTimeElapse(ctrl, 59);
+                SimulateTimeElapse(ctx.Ctrl, 1);
 
-            Assert.IsTrue(hw.HeaterOn, "ensure the heater is on 1 second before the end of heating");
-
-            SimulateTimeElapse(ctrl, 1);
-
-            Assert.IsFalse(hw.HeaterOn, "ensure the heater is off when 60 second elapsed");
+                Assert.IsFalse(ctx.Hw.HeaterOn, "ensure the heater is off when 60 second elapsed");
+            }
         }
 
         [Test(Description = "US_6: When I press start button when door is closed and already heating, increase remaining time with 1 minute.")]
         [TestCaseSource("GetImplementations")]
-        public void US6_Test1(IMicrowaveOvenControler ctrl, IMicrowaveOvenHWEx hw)
+        public void US6_When_button_pressed_and_door_closed_and_heating_increase_time_1_minute(IMicrowaveOvenControler ctrl, IMicrowaveOvenHWEx hw)
         {
-            hw.Initialize();
-            ctrl.Initialize(hw);
+            using (var ctx = new MicrowaveTestSetup(ctrl, hw))
+            {
+                // simulate press start button
+                ctx.Ui.PressStartButton();
 
-            // ensure the heater is off and the door closed - default initial state
-            Assert.IsFalse(hw.HeaterOn);
-            Assert.IsFalse(hw.DoorOpen);
-            Assert.IsFalse(hw.LightOn);
+                Assert.IsTrue(ctx.Hw.HeaterOn,
+                    "ensure the heater has been started after 'PressStartButton'");
 
-            // simulate press start button
-            ((IMicrowaveOvenUI)hw).PressStartButton();
+                SimulateTimeElapse(ctx.Ctrl, 59);
 
-            Assert.IsTrue(hw.HeaterOn, 
-                "ensure the heater has been started after 'PressStartButton'");
+                // simulate second press of the start button
+                ctx.Ui.PressStartButton();
 
-            SimulateTimeElapse(ctrl, 59);
+                Assert.IsTrue(ctx.Hw.HeaterOn, "ensure the heater is still on");
 
-            // simulate second press of the start button
-            ((IMicrowaveOvenUI)hw).PressStartButton();
+                SimulateTimeElapse(ctx.Ctrl, 60);
 
-            Assert.IsTrue(hw.HeaterOn, "ensure the heater is still on");
+                Assert.IsTrue(ctx.Hw.HeaterOn,
+                    "ensure the heater is on 1 second before the end of heating (60 + 59 seconds)");
 
-            SimulateTimeElapse(ctrl, 60);
+                SimulateTimeElapse(ctx.Ctrl, 1);
 
-            Assert.IsTrue(hw.HeaterOn, 
-                "ensure the heater is on 1 second before the end of heating (60 + 59 seconds)");
-
-            SimulateTimeElapse(ctrl, 1);
-
-            Assert.IsFalse(hw.HeaterOn, 
-                "ensure the heater is off when 60 second elapsed");
+                Assert.IsFalse(ctx.Hw.HeaterOn,
+                    "ensure the heater is off when 60 second elapsed");
+            }
         }
 
         [Test(Description = "US_7: When I open the door twice...")]
         [TestCaseSource("GetImplementations")]
-        public void US7_Test1(IMicrowaveOvenControler ctrl, IMicrowaveOvenHWEx hw)
+        public void US7_When_I_open_the_door_twice(IMicrowaveOvenControler ctrl, IMicrowaveOvenHWEx hw)
         {
-            hw.Initialize();
-            ctrl.Initialize(hw);
-
-            // simulate door open twice - does it make any sense?
-            ((IMicrowaveOvenUI)hw).OpenDoor();
-            ((IMicrowaveOvenUI)hw).OpenDoor();
+            using (var ctx = new MicrowaveTestSetup(ctrl, hw))
+            {
+                // simulate door open twice - does it make any sense?
+                ctx.Ui.OpenDoor();
+                ctx.Ui.OpenDoor();
+            }
         }
 
         [Test(Description = "US_8: When I close the door twice...")]
         [TestCaseSource("GetImplementations")]
-        public void US8_Test1(IMicrowaveOvenControler ctrl, IMicrowaveOvenHWEx hw)
+        public void US8_When_I_close_the_door_twice(IMicrowaveOvenControler ctrl, IMicrowaveOvenHWEx hw)
         {
-            hw.Initialize();
-            ctrl.Initialize(hw);
+            using (var ctx = new MicrowaveTestSetup(ctrl, hw))
+            {
+                // simulate door open
+                ctx.Ui.OpenDoor();
 
-            // simulate door open
-            ((IMicrowaveOvenUI)hw).OpenDoor();
-
-            // simulate door close twice - does it make any sense?
-            ((IMicrowaveOvenUI)hw).CloseDoor();
-            ((IMicrowaveOvenUI)hw).CloseDoor();
+                // simulate door close twice - does it make any sense?
+                ctx.Ui.CloseDoor();
+                ctx.Ui.CloseDoor();
+            }
         }
 
         #region private helpers

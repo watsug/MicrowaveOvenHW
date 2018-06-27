@@ -1,14 +1,13 @@
 ﻿using System;
+using System.Threading;
+using System.Diagnostics;
 using System.Composition;
 using System.ComponentModel;
-using Stateless;
+using System.Threading.Tasks;
+using System.Collections.Concurrent;
 
 using MicrowaveOvenHW.Enums;
 using MicrowaveOvenHW.Interfaces;
-using System.Collections.Concurrent;
-using System.Diagnostics;
-using System.Threading;
-using System.Threading.Tasks;
 using MicrowaveOvenHW.Core;
 
 namespace MicrowaveOvenHW
@@ -36,7 +35,7 @@ namespace MicrowaveOvenHW
             _queue.Enqueue(to);
 
             // wait until trigger is processed
-            while (!to.Processed) Thread.Sleep(10);
+            to.WaitUntilProcessed();
         }
         #endregion
 
@@ -48,7 +47,7 @@ namespace MicrowaveOvenHW
             _queue.Enqueue(to);
 
             // wait until trigger is processed
-            while (!to.Processed) Thread.Sleep(10);
+            to.WaitUntilProcessed();
         }
 
         protected override void HwOnStartButtonPressed(object sender, EventArgs eventArgs)
@@ -57,7 +56,7 @@ namespace MicrowaveOvenHW
             _queue.Enqueue(to);
 
             // wait until trigger is processed
-            while (!to.Processed) Thread.Sleep(10);
+            to.WaitUntilProcessed();
         }
 
         #region private methods
